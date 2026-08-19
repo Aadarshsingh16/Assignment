@@ -47,7 +47,7 @@ flowchart TD
 
 ### Key Execution Highlights
 
-- **Server-Side Reddit API Access:** Handled securely via Devvit's Node.js environment (`@devvit/web/server`).
+- **Server-Side Reddit API Access:** Handled securely via Devvit's serverless Node.js environment (`@devvit/web/server`).
 - **Client-Side Sentiment Engine:** Executed entirely inside the React iframe browser context (`src/client/utils/sentiment.ts`).
 - **No External AI Service:** Sentiment analysis requires zero external API keys, machine learning models, or LLM endpoints.
 - **Title-Based Analysis:** Post **TITLES** are the single source of input for sentiment calculation.
@@ -275,7 +275,7 @@ Clone the repository and install dependencies:
 npm install
 ```
 
-### Local Playtest
+### Local Development & Playtest
 
 Start the Devvit playtest environment:
 
@@ -283,13 +283,13 @@ Start the Devvit playtest environment:
 npm run dev
 ```
 
-This compiles client and server assets, starts watching for changes, uploads the app build to Devvit, and launches the custom post in your test subreddit (`r/hot_posts_dev`).
+`npm run dev` starts the Devvit playtest environment by executing `devvit playtest`. It compiles client and server assets, watches for file changes, uploads the app build to the Devvit sandbox, and renders the custom post inside the designated playtest subreddit (`r/hot_posts_dev`).
 
 ---
 
-## 🧪 Verification & Code Quality
+## 🧪 Validation
 
-The repository includes scripts to verify types, linting, production build output, and mathematical correctness:
+The project maintains code quality with automated type checks, linting, production build verification, and math test suites:
 
 ```bash
 # 1. Type-check TypeScript codebase
@@ -305,11 +305,103 @@ node tools/verify-vibe-math.mjs
 npm run build
 ```
 
+### Validation Command Descriptions
+
+- **`npm run test:types`:** Executes `tsc --build` to ensure strict TypeScript type safety across client, server, and shared code without emitting output.
+- **`npm run lint`:** Runs `eslint` across the codebase to enforce code formatting, quality rules, and React hooks best practices.
+- **`node tools/verify-vibe-math.mjs`:** Runs a standalone verification script testing edge cases, boundary conditions, comparative thresholds, and percentage calculations.
+- **`npm run build`:** Runs `vite build` to compile production assets for the client iframe and server entry points.
+
+### Validation Status Summary
+
+| Check | Status |
+| :--- | :---: |
+| TypeScript | ✅ |
+| ESLint | ✅ |
+| Production build | ✅ |
+| Vibe math verification | ✅ |
+
 ---
 
-## 📌 Technical Limitations & Considerations
+## 🧪 Manual Testing
 
-- **Lexical Sentiment Scope:** The AFINN-165 dictionary evaluates literal word valences in English. Sarcasm, domain-specific slang, internet acronyms, or non-English titles default to neutral ($0.0$).
-- **API Fetch Limit:** Reddit's API limits post retrieval to a maximum of 50 HOT posts per request.
-- **Title-Only Processing:** Sentiment analysis is performed strictly on post titles; post body text and comment threads are not processed.
-- **Subreddit Visibility:** Private, banned, or non-existent subreddits return structured API error responses derived from Reddit's access control rules.
+The application has been manually tested across active public communities and edge cases:
+
+### Subreddits Tested
+- `r/programming` ✅
+- `r/technology` ✅
+- `r/gaming` ✅
+- `r/artificial` ✅
+
+### Edge Cases Tested
+- **Input formatting:** Plain name (`technology`) vs prefixed (`r/technology`) — both sanitize and resolve correctly.
+- **Empty input:** Submitting empty query triggers client-side validation without sending network requests.
+- **Invalid subreddit name:** Inputs with invalid characters or out of range lengths (e.g. `a!b`) return structured `INVALID` error states.
+- **Non-existent / private subreddit:** Non-existent subreddits (e.g. `r/this_subreddit_does_not_exist_12345`) trigger clean 404 `NOT_FOUND` error messages.
+
+---
+
+## ♿ Accessibility & UX
+
+The user interface incorporates accessibility and user experience best practices:
+
+- **ARIA Labels:** Explicit aria-labels attached to subreddit search input fields.
+- **Descriptive External Links:** External links to Reddit posts feature descriptive text and `target="_blank" rel="noopener noreferrer"`.
+- **Keyboard Focus States:** Clear outline and contrast indicators for interactive search inputs and buttons.
+- **High-Contrast Typography:** Modern typography tailored against dark backgrounds for optimal readability.
+- **Responsive Layouts:** Flexible CSS Grid and Flexbox layouts accommodating desktop, tablet, and mobile viewports.
+- **No Horizontal Overflow:** Containers use bounded overflow controls to eliminate unwanted horizontal scrollbars.
+
+---
+
+## 🔒 Security & Data Handling
+
+- **Server-Side API Authentication:** All Reddit API calls occur server-side through Devvit's authenticated context.
+- **No Hardcoded Credentials:** Zero API keys, OAuth tokens, or client secrets are exposed in client-side bundles or source code.
+- **Client-Side Processing:** Sentiment analysis executes entirely in the user's browser, preventing post titles from being transmitted to third-party services.
+- **No External Dependencies:** No external AI or third-party sentiment APIs are queried.
+- **Clean Repository:** `.gitignore` excludes build artifacts (`dist/`), `node_modules/`, and local environment files.
+
+---
+
+## 📌 Technical Limitations
+
+- **Platform Dependency:** Built specifically as an embedded app for Reddit's Devvit platform.
+- **Lexical Sentiment Scope:** AFINN-165 evaluates literal dictionary word valences; it cannot detect sarcasm, irony, subtle context, or domain-specific slang.
+- **Language Scope:** AFINN-165 dictionary is primarily English-oriented. Non-English titles default to neutral ($0.0$).
+- **Reddit Listing Limit:** Fetches up to 50 HOT posts per request as constrained by the application and Reddit API pagination limits.
+- **Subreddit Access Control:** Private, banned, or restricted subreddits are subject to Reddit API authorization policies.
+
+---
+
+## ✅ Assignment Compliance
+
+| Requirement | Implementation | Status |
+| :--- | :--- | :---: |
+| Subreddit input/selection | Search bar with plain and `r/` prefix support + quick suggestions | [x] |
+| HOT post retrieval | Server-side fetching via Devvit `reddit.getHotPosts()` | [x] |
+| Up to 50 posts | Configured limit parameter returning up to 50 posts | [x] |
+| Client-side sentiment analysis | Executed locally via AFINN-165 `sentiment` npm package | [x] |
+| Positive/Neutral/Negative classification | Comparative thresholds ($\ge +0.05$, $\le -0.05$, else neutral) | [x] |
+| Sentiment distribution | Calculated via Largest Remainder Method (guaranteed 100%) | [x] |
+| Vibe Score | Bounded 0–100 scale derived from average comparative score | [x] |
+| Individual post analysis | Post cards displaying score, badge, metadata, and link | [x] |
+| Responsive dashboard | CSS-driven dark design optimized for desktop and mobile | [x] |
+| Error handling | Context-aware UI for invalid, private, empty, or network errors | [x] |
+| Real Reddit API data | Authenticated live post fetch via Devvit platform | [x] |
+| Devvit Web implementation | React 19 + Hono architecture on `@devvit/web` | [x] |
+
+---
+
+## 🔗 Live Demo & Source Code
+
+- **Live Demo:** [https://www.reddit.com/r/hot_posts_dev/?playtest=hot-posts](https://www.reddit.com/r/hot_posts_dev/?playtest=hot-posts)
+- **Source Code:** [https://github.com/Aadarshsingh16/Assignment](https://github.com/Aadarshsingh16/Assignment)
+
+---
+
+## 👤 Author
+
+**Adarsh Singh**  
+B.Tech — Computer Science (Artificial Intelligence)  
+ABESIT, Ghaziabad
