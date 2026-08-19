@@ -24,7 +24,7 @@
     "@hono/node-server": "2.0.12",
     "@types/sentiment": "^5.0.4",
     "devvit": "0.14.1",
-    "hono": "4.12.32",
+    "hono": "4.13.2",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "sentiment": "^5.0.2"
